@@ -21,7 +21,7 @@ local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
 local ChapterListing = require("ChapterListing")
 local MangaSearchResults = require("MangaSearchResults")
-local SearchHistory = require("SearchHistory")
+
 local Menu = require("widgets/Menu")
 local Settings = require("Settings")
 local Testing = require("testing")
