@@ -21,6 +21,7 @@ local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
 local ChapterListing = require("ChapterListing")
 local MangaSearchResults = require("MangaSearchResults")
+local SearchHistory = require("SearchHistory")
 local Menu = require("widgets/Menu")
 local Settings = require("Settings")
 local Testing = require("testing")
@@ -128,6 +129,29 @@ function LibraryView:patchTitleBar(count_notify)
       callback = function()
         self:openSearchMangasDialog()
       end,
+    },
+    VerticalGroup:new {
+      Button:new {
+        text = Icons.RESTORE,
+        face = SMALL_FONT_FACE,
+        bordersize = 0,
+        enabled = true,
+        text_font_size = 16,
+        text_font_bold = false,
+        callback = function()
+          Trapper:wrap(function()
+            local onReturnCallback = function()
+              self:fetchAndShow()
+            end
+            SearchHistory:show(onReturnCallback)
+
+            self:onClose()
+          end)
+        end
+      },
+      VerticalSpan:new {
+        width = right_icon_size / 2
+      }
     },
     IconButton:new {
       icon = "close",
@@ -391,6 +415,21 @@ function LibraryView:openMenu()
           self:openSearchMangasDialog()
         end
       },
+      {
+        text = Icons.RESTORE .. " Search history",
+        callback = function()
+          UIManager:close(dialog)
+
+          Trapper:wrap(function()
+            local onReturnCallback = function()
+              self:fetchAndShow()
+            end
+            SearchHistory:show(onReturnCallback)
+
+            self:onClose()
+          end)
+        end
+      },
     },
     {
       {
@@ -570,7 +609,9 @@ function LibraryView:openSearchMangasDialog()
           callback = function()
             UIManager:close(dialog)
 
-            self:searchMangas(dialog:getInputText())
+            local q = dialog:getInputText()
+            SearchHistory.store.add(q)
+            self:searchMangas(q)
           end,
         },
       }
@@ -776,7 +817,7 @@ function LibraryView:searchMangas(search_text)
     local onReturnCallback = function()
       self:fetchAndShow()
     end
-
+    SearchHistory.store.add(search_text)
     MangaSearchResults:searchAndShow(search_text, onReturnCallback)
 
     self:onClose()

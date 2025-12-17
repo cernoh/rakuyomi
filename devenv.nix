@@ -1,6 +1,10 @@
-{ pkgs, lib, config, inputs, ... }:
-
-let
+{
+  pkgs,
+  lib,
+  config,
+  inputs,
+  ...
+}: let
   koreader = pkgs.callPackage ./packages/koreader.nix {};
   cargo-debugger = pkgs.rustPlatform.buildRustPackage {
     pname = "cargo-debugger";
@@ -14,15 +18,18 @@ let
 
     cargoHash = "sha256-19cm5wVs6z+XuBcIwqWOgoLY6lP6G1jUM68mmRNGf5U=";
 
-    buildInputs = with pkgs; [
-      openssl
-      pkg-config
-    ] ++ lib.optionals stdenv.isDarwin [
-      darwin.apple_sdk.frameworks.Security
-    ];
+    buildInputs = with pkgs;
+      [
+        openssl
+        pkg-config
+      ]
+      ++ lib.optionals stdenv.isDarwin [
+        darwin.apple_sdk.frameworks.Security
+      ];
   };
 
-  koreaderFrontendPath = if pkgs.stdenv.isDarwin
+  koreaderFrontendPath =
+    if pkgs.stdenv.isDarwin
     then "${koreader}/Applications/KOReader.app/Contents/koreader/frontend"
     else "${koreader}/lib/koreader/frontend";
 
@@ -49,30 +56,34 @@ let
   };
 in {
   # https://devenv.sh/packages/
-  packages = [koreader cargo-debugger] ++ (with pkgs; [ 
-    cargo-flamegraph
-    clang
-    gcc
-    git
-    lua-language-server
-    luajitPackages.busted
-    mdbook
-    mdbook-admonish
-    pkgs-unstable.poetry
-    python313Full
-    python313Packages.tkinter
-    sqlx-cli
-    sshpass
-    pkg-config
-    freetype
-    freetype-sys
-    fontconfig
-  ] ++ lib.optionals (!stdenv.isDarwin) [
-    mold-wrapped
-  ] ++ lib.optionals stdenv.isDarwin [
-    libiconv
-    darwin.apple_sdk.frameworks.SystemConfiguration
-  ]);
+  packages =
+    [koreader cargo-debugger]
+    ++ (with pkgs;
+      [
+        cargo-flamegraph
+        clang
+        gcc
+        git
+        lua-language-server
+        luajitPackages.busted
+        mdbook
+        mdbook-admonish
+        pkgs-unstable.poetry
+        python313Full
+        python313Packages.tkinter
+        sqlx-cli
+        sshpass
+        pkg-config
+        freetype
+        fontconfig
+      ]
+      ++ lib.optionals (!stdenv.isDarwin) [
+        mold-wrapped
+      ]
+      ++ lib.optionals stdenv.isDarwin [
+        libiconv
+        darwin.apple_sdk.frameworks.SystemConfiguration
+      ]);
 
   # Add generated files
   files = {
@@ -93,7 +104,6 @@ in {
   languages.rust = {
     enable = true;
     channel = "stable";
-    version = "1.91.1";
   };
 
   # Enable cachix
